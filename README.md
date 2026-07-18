@@ -2,8 +2,6 @@
 
 <img src="assets/Remake/Logo.png" alt="Bee Swarm Simulator Remake Logo" width="400">
 
-# Bee Swarm Simulator Remake
-
 A fan-made reimplementation of [Bee Swarm Simulator](https://www.roblox.com/es/games/1537690962/Bee-Swarm-Simulator) on Roblox.
 
 </div>
