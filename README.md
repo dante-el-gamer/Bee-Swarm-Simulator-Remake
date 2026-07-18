@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="README-assets/Hivesticker_grey_diamond_logo.webp" height="80">
+<img src="assets/Remake/Logo.png" alt="Bee Swarm Simulator Remake Logo" width="400">
 
 # Bee Swarm Simulator Remake
 
