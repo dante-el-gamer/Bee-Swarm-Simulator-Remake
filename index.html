@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bee Swarm Simulator Remake</title>
   <link rel="icon" type="image/png" href="HTML-assets/Icon.png">
+  <script>
+    (function() {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
 
@@ -24,6 +32,50 @@
       --white: #fffef5;
       --text: #3e2723;
       --card-bg: rgba(255, 255, 245, 0.92);
+      --section-text: #4e342e;
+      --code-bg: #3e2723;
+      --code-text: #a5d6a7;
+      --disclaimer-bg: #fff3e0;
+      --disclaimer-border: #ff9800;
+      --disclaimer-h: #e65100;
+      --accordion-border: #e0e0e0;
+      --accordion-hover: #f5f5f5;
+      --backtop-bg: var(--honey);
+      --backtop-color: var(--brown);
+      --toggle-bg: var(--card-bg);
+      --toggle-border: var(--hive-yellow);
+      --changelog-bg: #f5f5f5;
+      --credits-bio: #5d4037;
+      --topbar-bg: rgba(255, 254, 245, 0.88);
+      --topbar-height: 56px;
+    }
+
+    [data-theme="dark"] {
+      --sky-top: #1a1a2e;
+      --sky-bottom: #16213e;
+      --text: #e0e0e0;
+      --card-bg: rgba(30, 30, 60, 0.92);
+      --section-text: #cfd8dc;
+      --white: #eceff1;
+      --brown: #ffcc80;
+      --brown-light: #bcaaa4;
+      --hive-yellow: #fdd835;
+      --grass: #2e7d32;
+      --grass-dark: #1b5e20;
+      --code-bg: #0d1b2a;
+      --code-text: #80cbc4;
+      --disclaimer-bg: rgba(50, 30, 0, 0.9);
+      --disclaimer-border: #e65100;
+      --disclaimer-h: #ffab40;
+      --accordion-border: #333;
+      --accordion-hover: #252545;
+      --backtop-bg: #f5a623;
+      --backtop-color: #1a1a2e;
+      --toggle-bg: rgba(30, 30, 60, 0.92);
+      --toggle-border: #fdd835;
+      --changelog-bg: rgba(255, 255, 255, 0.05);
+      --credits-bg: rgba(255, 255, 255, 0.05);
+      --topbar-bg: rgba(26, 26, 46, 0.88);
     }
 
     html { scroll-behavior: smooth; }
@@ -60,7 +112,7 @@
     /* --- Hero --- */
     .hero {
       text-align: center;
-      padding: 4rem 1rem 3rem;
+      padding: calc(var(--topbar-height) + 3rem) 1rem 3rem;
       position: relative;
       z-index: 1;
     }
@@ -94,30 +146,122 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
 
-    /* --- Nav --- */
-    .nav {
+    /* --- Top bar --- */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--topbar-height);
+      background: var(--topbar-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 2px solid var(--hive-yellow);
       display: flex;
-      justify-content: center;
-      gap: 1rem;
-      padding: 1.5rem 1rem;
-      position: relative;
-      z-index: 1;
-      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 200;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
     }
-    .nav a {
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
       text-decoration: none;
-      background: var(--card-bg);
       color: var(--text);
-      padding: 0.65rem 1.5rem;
+      font-weight: 700;
+      font-size: 1.05rem;
+      flex-shrink: 0;
+    }
+    .topbar-brand img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+    }
+    .topbar-links {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .topbar-links a {
+      text-decoration: none;
+      color: var(--text);
+      padding: 0.4rem 0.85rem;
       border-radius: 999px;
       font-weight: 600;
-      font-size: 1rem;
-      border: 2px solid var(--hive-yellow);
+      font-size: 0.88rem;
+      transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
+    }
+    .topbar-links a:hover {
+      background: var(--hive-yellow);
+      color: var(--brown);
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    .topbar .theme-toggle {
+      padding: 0.4rem 0.75rem;
+      font-size: 1.1rem;
+    }
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text);
+      padding: 0.3rem;
+      line-height: 1;
+    }
+
+    /* Mobile topbar */
+    @media (max-width: 768px) {
+      .topbar-links {
+        display: none;
+        position: absolute;
+        top: var(--topbar-height);
+        left: 0;
+        right: 0;
+        background: var(--topbar-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 2px solid var(--hive-yellow);
+        flex-direction: column;
+        padding: 0.75rem 1rem;
+        gap: 0.25rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+      .topbar-links.open {
+        display: flex;
+      }
+      .topbar-links a {
+        width: 100%;
+        text-align: center;
+        padding: 0.6rem 1rem;
+      }
+      .hamburger {
+        display: block;
+      }
+    }
+
+    /* --- Dark mode toggle --- */
+    .theme-toggle {
+      background: var(--toggle-bg);
+      border: 2px solid var(--toggle-border);
+      border-radius: 999px;
+      padding: 0.55rem 1rem;
+      font-size: 1.2rem;
+      cursor: pointer;
       transition: all 0.2s;
       box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      line-height: 1;
     }
-    .nav a:hover {
-      background: var(--hive-yellow);
+    .theme-toggle:hover {
       transform: translateY(-2px);
       box-shadow: 0 5px 15px rgba(0,0,0,0.15);
     }
@@ -149,7 +293,7 @@
     }
     .section p, .section li {
       line-height: 1.7;
-      color: #4e342e;
+      color: var(--section-text);
     }
     .section ul {
       list-style: none;
@@ -161,13 +305,20 @@
     .section ul li {
       padding: 0.3rem 0;
     }
+    .section ol {
+      padding-left: 1.5rem;
+      color: var(--section-text);
+    }
+    .section ol li {
+      padding: 0.3rem 0;
+    }
 
     /* --- Structure tree --- */
     .tree {
       font-family: monospace;
       font-size: 0.9rem;
-      background: #3e2723;
-      color: #a5d6a7;
+      background: var(--code-bg);
+      color: var(--code-text);
       padding: 1.2rem;
       border-radius: 12px;
       overflow-x: auto;
@@ -176,10 +327,162 @@
 
     /* --- Disclaimer --- */
     .disclaimer {
-      background: #fff3e0;
-      border-color: #ff9800;
+      background: var(--disclaimer-bg);
+      border-color: var(--disclaimer-border);
     }
-    .disclaimer h2 { color: #e65100; }
+    .disclaimer h2 { color: var(--disclaimer-h); }
+
+    /* --- FAQ Accordion --- */
+    .accordion-item {
+      border: 1px solid var(--accordion-border);
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+    }
+    .accordion-item summary {
+      padding: 1rem 1.2rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text);
+      background: var(--changelog-bg);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.2s;
+      user-select: none;
+    }
+    .accordion-item summary::-webkit-details-marker { display: none; }
+    .accordion-item summary::after {
+      content: '▸';
+      font-size: 1.2rem;
+      transition: transform 0.2s;
+      color: var(--brown-light);
+    }
+    .accordion-item[open] summary::after {
+      transform: rotate(90deg);
+    }
+    .accordion-item summary:hover {
+      background: var(--accordion-hover);
+    }
+    .accordion-item .accordion-body {
+      padding: 0 1.2rem 1rem;
+      line-height: 1.7;
+      color: var(--section-text);
+    }
+
+    /* --- Contributing --- */
+    .contributing-link {
+      display: inline-block;
+      margin-top: 1rem;
+      background: var(--honey);
+      color: var(--brown);
+      padding: 0.7rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 1rem;
+      text-decoration: none;
+      border: 2px solid var(--honey-dark);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      transition: all 0.2s;
+    }
+    .contributing-link:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+
+    /* --- Changelog --- */
+    .changelog-entry {
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--accordion-border);
+    }
+    .changelog-entry:last-child {
+      border-bottom: none;
+    }
+    .changelog-version {
+      font-weight: 700;
+      color: var(--brown);
+      font-size: 1rem;
+    }
+    .changelog-desc {
+      color: var(--section-text);
+      margin-top: 0.2rem;
+    }
+    .changelog-entry.old {
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
+
+    /* --- Credits --- */
+    .credits-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .credit-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--changelog-bg);
+      padding: 1rem 1.2rem;
+      border-radius: 12px;
+      border: 1px solid var(--accordion-border);
+    }
+    .credit-card .credit-emoji {
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+    .credit-card .credit-info strong {
+      display: block;
+      color: var(--brown);
+      font-size: 1rem;
+    }
+    .credit-card .credit-info span {
+      color: var(--section-text);
+      font-size: 0.9rem;
+    }
+    .credit-card .credit-info a {
+      color: var(--honey-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .credit-card .credit-info a:hover {
+      text-decoration: underline;
+    }
+
+    /* --- Back to top button --- */
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--backtop-bg);
+      color: var(--backtop-color);
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: opacity 0.3s, transform 0.3s, visibility 0.3s, background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .back-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .back-to-top:hover {
+      background: var(--hive-yellow);
+      transform: translateY(-3px);
+    }
 
     /* --- Footer --- */
     .footer {
@@ -205,12 +508,44 @@
       flex-wrap: wrap;
       margin-top: 0.5rem;
     }
+
+    @media (max-width: 600px) {
+      .theme-toggle { padding: 0.45rem 0.8rem; font-size: 1rem; }
+      .section { padding: 1.5rem 1rem; }
+      .back-to-top { bottom: 1.2rem; right: 1.2rem; width: 44px; height: 44px; font-size: 1.2rem; }
+    }
   </style>
 </head>
 <body>
 
   <!-- Floating bees (generated by JS) -->
   <div id="beeContainer"></div>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <a href="#" class="topbar-brand">
+      <img src="HTML-assets/Icon.png" alt="BSSR">
+      <span>BSSR</span>
+    </a>
+    <nav class="topbar-links" id="topbarLinks">
+      <a href="#about">Acerca de</a>
+      <a href="#start">Empezar</a>
+      <a href="#structure">Estructura</a>
+      <a href="#music-link">Música</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contribuir">Contribuir</a>
+      <a href="#changelog">Changelog</a>
+      <a href="#creditos">Créditos</a>
+      <a href="#disclaimer">Aviso</a>
+    </nav>
+    <div class="topbar-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">☀️</button>
+      <button class="hamburger" id="hamburger" aria-label="Menú">☰</button>
+    </div>
+  </header>
+
+  <!-- Back to top -->
+  <button class="back-to-top" id="backToTop" aria-label="Volver arriba">▲</button>
 
   <!-- Hero -->
   <header class="hero">
@@ -219,15 +554,6 @@
     <p style="-webkit-text-stroke: 1.5px #000; paint-order: stroke fill;">Recreación fan-made de Bee Swarm Simulator.</p>
     <span class="badge">Fan Project — No afiliado con Onett</span>
   </header>
-
-  <!-- Navigation -->
-  <nav class="nav">
-    <a href="#about">Acerca de</a>
-    <a href="#start">Empezar</a>
-    <a href="#structure">Estructura</a>
-    <a href="#music-link">Música</a>
-    <a href="#disclaimer">Aviso</a>
-  </nav>
 
   <!-- Content -->
   <main class="content">
@@ -290,6 +616,91 @@
       </a>
     </section>
 
+    <section id="faq" class="section">
+      <h2>❓ Preguntas Frecuentes</h2>
+
+      <details class="accordion-item">
+        <summary>¿Es Multiplayer?</summary>
+        <div class="accordion-body">No actualmente, pero está en el roadmap como prioridad.</div>
+      </details>
+
+      <details class="accordion-item">
+        <summary>¿Puedo contribuir al proyecto?</summary>
+        <div class="accordion-body">¡Sí! Mirá la sección de Contribuir más abajo.</div>
+      </details>
+
+      <details class="accordion-item">
+        <summary>¿Necesito Roblox Studio?</summary>
+        <div class="accordion-body">Sí, necesitás Roblox Studio para abrir y editar el archivo <code>.rbxl</code>.</div>
+      </details>
+
+      <details class="accordion-item">
+        <summary>¿Es igual al BSS original?</summary>
+        <div class="accordion-body">No, es una reimplementación independiente que busca ofrecer una experiencia renovada.</div>
+      </details>
+
+      <details class="accordion-item">
+        <summary>¿El juego original está muerto?</summary>
+        <div class="accordion-body">No, Bee Swarm Simulator sigue activo con su propia comunidad.</div>
+      </details>
+
+      <details class="accordion-item">
+        <summary>¿Puedo usar los assets?</summary>
+        <div class="accordion-body">Los assets son de Onett/Roblox. Este proyecto es solo para referencia educativa.</div>
+      </details>
+    </section>
+
+    <section id="contribuir" class="section">
+      <h2>🤝 Contribuir</h2>
+      <p style="margin-bottom:1rem;">Seguí estos pasos para contribuir al proyecto:</p>
+      <ol>
+        <li>Cloná el repositorio</li>
+        <li>Abrí <code>BSSR.rbxl</code> en Roblox Studio</li>
+        <li>Hacé tus cambios</li>
+        <li>Testeá en Studio</li>
+        <li>Hacé un PR con una descripción clara</li>
+      </ol>
+      <a class="contributing-link" href="https://github.com/Dante-Dev-Community/Bee-Swarm-Simulator-Remake" target="_blank">
+        🐙 Ir al Repositorio
+      </a>
+    </section>
+
+    <section id="changelog" class="section">
+      <h2>📋 Changelog</h2>
+
+      <div class="changelog-entry">
+        <span class="changelog-version">v0.1.0</span>
+        <p class="changelog-desc">Lanzamiento inicial: mapa base, sistema de abejas, árbol de habilidades</p>
+      </div>
+    </section>
+
+    <section id="creditos" class="section">
+      <h2>🏆 Créditos</h2>
+      <div class="credits-grid">
+        <div class="credit-card">
+          <span class="credit-emoji">🎮</span>
+          <div class="credit-info">
+            <strong>Onett Studio</strong>
+            <span>Creadores originales de BSS — <a href="https://www.roblox.com/es/communities/9760527/Onetts-Studio#!/about" target="_blank">Comunidad en Roblox</a></span>
+          </div>
+        </div>
+        <div class="credit-card">
+          <span class="credit-emoji">💬</span>
+          <div class="credit-info">
+            <strong>Comunidad BSS en Español</strong>
+            <span>Por el apoyo y la comunidad</span>
+          </div>
+        </div>
+        <div class="credit-card">
+          <span class="credit-emoji">🐝</span>
+          <div class="credit-info">
+            <strong>Dante</strong>
+            <span>Desarrollo del remake</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="disclaimer" class="section disclaimer">
       <h2>⚠️ Aviso</h2>
       <p>
@@ -310,6 +721,7 @@
   </footer>
 
   <script>
+    // --- Floating bees ---
     (function() {
       const container = document.getElementById('beeContainer');
       const beeNormal = 'HTML-assets/DemoBee.webp';
@@ -321,18 +733,72 @@
         { top: '70%', dur: 18, delay: 2 },
         { top: '15%', dur: 14, delay: 5 }
       ];
-      configs.forEach(c => {
-        const div = document.createElement('div');
+      configs.forEach(function(c) {
+        var div = document.createElement('div');
         div.className = 'bee';
         div.style.top = c.top;
         div.style.left = '-5%';
         div.style.animationDuration = c.dur + 's';
         div.style.animationDelay = c.delay + 's';
-        const img = document.createElement('img');
+        var img = document.createElement('img');
         img.src = Math.random() < 0.3 ? beeGifted : beeNormal;
         img.alt = 'Bee';
         div.appendChild(img);
         container.appendChild(div);
+      });
+    })();
+
+    // --- Dark mode toggle ---
+    (function() {
+      var toggle = document.getElementById('themeToggle');
+      var root = document.documentElement;
+
+      function updateIcon() {
+        var isDark = root.getAttribute('data-theme') === 'dark';
+        toggle.textContent = isDark ? '🌙' : '☀️';
+      }
+
+      updateIcon();
+
+      toggle.addEventListener('click', function() {
+        var isDark = root.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          root.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          root.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+        updateIcon();
+      });
+    })();
+
+    // --- Back to top ---
+    (function() {
+      var btn = document.getElementById('backToTop');
+      window.addEventListener('scroll', function() {
+        if (window.scrollY > 300) {
+          btn.classList.add('visible');
+        } else {
+          btn.classList.remove('visible');
+        }
+      });
+      btn.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    })();
+
+    // --- Hamburger menu ---
+    (function() {
+      var hamburger = document.getElementById('hamburger');
+      var links = document.getElementById('topbarLinks');
+      hamburger.addEventListener('click', function() {
+        links.classList.toggle('open');
+      });
+      links.querySelectorAll('a').forEach(function(a) {
+        a.addEventListener('click', function() {
+          links.classList.remove('open');
+        });
       });
     })();
   </script>
