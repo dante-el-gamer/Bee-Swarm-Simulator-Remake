@@ -12,3 +12,5 @@
 *.md linguist-language=Markdown
 *.txt linguist-detectable=true
 *.txt linguist-language=Text
+*.mp3 binary
+*.ogg binary
