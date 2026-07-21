@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bee Swarm Simulator Remake</title>
+  <link rel="icon" type="image/png" href="HTML-assets/Icon.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --honey: #f5a623;
+      --honey-dark: #d4891a;
+      --hive-yellow: #fdd835;
+      --hive-dark: #c8a415;
+      --grass: #4caf50;
+      --grass-dark: #388e3c;
+      --sky-top: #87ceeb;
+      --sky-bottom: #e0f7fa;
+      --brown: #5d4037;
+      --brown-light: #8d6e63;
+      --white: #fffef5;
+      --text: #3e2723;
+      --card-bg: rgba(255, 255, 245, 0.92);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Fredoka', sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 40%, var(--grass) 60%, var(--grass-dark) 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* --- Floating bees animation --- */
+    .bee {
+      position: fixed;
+      animation: fly linear infinite;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.7;
+    }
+    .bee img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+    }
+    @keyframes fly {
+      0%   { transform: translate(0, 0) rotate(0deg); }
+      25%  { transform: translate(25vw, -40px) rotate(10deg); }
+      50%  { transform: translate(50vw, 10px) rotate(-5deg); }
+      75%  { transform: translate(75vw, -30px) rotate(8deg); }
+      100% { transform: translate(105vw, 0) rotate(0deg); }
+    }
+
+    /* --- Hero --- */
+    .hero {
+      text-align: center;
+      padding: 4rem 1rem 3rem;
+      position: relative;
+      z-index: 1;
+    }
+    .hero img {
+      width: min(400px, 85vw);
+      filter: drop-shadow(0 6px 20px rgba(0,0,0,0.25));
+    }
+    .hero h1 {
+      font-size: clamp(1.6rem, 5vw, 2.8rem);
+      color: var(--white);
+      text-shadow: 2px 3px 0 var(--brown);
+      margin-top: 1rem;
+    }
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--white);
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+      margin-top: 0.5rem;
+      max-width: 600px;
+      margin-inline: auto;
+    }
+    .hero .badge {
+      display: inline-block;
+      background: var(--honey);
+      color: var(--brown);
+      padding: 0.3rem 1rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    /* --- Nav --- */
+    .nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1.5rem 1rem;
+      position: relative;
+      z-index: 1;
+      flex-wrap: wrap;
+    }
+    .nav a {
+      text-decoration: none;
+      background: var(--card-bg);
+      color: var(--text);
+      padding: 0.65rem 1.5rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 1rem;
+      border: 2px solid var(--hive-yellow);
+      transition: all 0.2s;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    .nav a:hover {
+      background: var(--hive-yellow);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    }
+
+    /* --- Sections --- */
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 1rem 4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      border: 2px solid var(--hive-yellow);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .section h2 {
+      font-size: 1.5rem;
+      color: var(--brown);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section p, .section li {
+      line-height: 1.7;
+      color: #4e342e;
+    }
+    .section ul {
+      list-style: none;
+      padding: 0;
+    }
+    .section ul li::before {
+      content: '🐝 ';
+    }
+    .section ul li {
+      padding: 0.3rem 0;
+    }
+
+    /* --- Structure tree --- */
+    .tree {
+      font-family: monospace;
+      font-size: 0.9rem;
+      background: #3e2723;
+      color: #a5d6a7;
+      padding: 1.2rem;
+      border-radius: 12px;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+
+    /* --- Disclaimer --- */
+    .disclaimer {
+      background: #fff3e0;
+      border-color: #ff9800;
+    }
+    .disclaimer h2 { color: #e65100; }
+
+    /* --- Footer --- */
+    .footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--white);
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+      font-size: 0.9rem;
+      position: relative;
+      z-index: 1;
+    }
+    .footer a {
+      color: var(--hive-yellow);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .footer a:hover { text-decoration: underline; }
+
+    .links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating bees (generated by JS) -->
+  <div id="beeContainer"></div>
+
+  <!-- Hero -->
+  <header class="hero">
+    <img src="assets/Remake/Logo.png" alt="Bee Swarm Simulator Remake Logo">
+    <h1>Bee Swarm Simulator Remake</h1>
+    <p style="-webkit-text-stroke: 1.5px #000; paint-order: stroke fill;">Recreación fan-made de Bee Swarm Simulator.</p>
+    <span class="badge">Fan Project — No afiliado con Onett</span>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <a href="#about">Acerca de</a>
+    <a href="#start">Empezar</a>
+    <a href="#structure">Estructura</a>
+    <a href="#music-link">Música</a>
+    <a href="#disclaimer">Aviso</a>
+  </nav>
+
+  <!-- Content -->
+  <main class="content">
+
+    <section id="about" class="section">
+      <h2>🍯 Acerca del Proyecto</h2>
+      <p>
+        Esta es una reimplementación comunitaria de
+        <a href="https://www.roblox.com/es/games/1537690962/Bee-Swarm-Simulator" target="_blank" style="color:var(--honey-dark);">Bee Swarm Simulator</a>
+        en Roblox. Esto no significa que el juego esté muerto, inactivo o en declive — sigue activo con comunidad propia.
+        El objetivo es aprovechar las nuevas funciones y capacidades que Roblox ofrece en la actualidad para ofrecer una experiencia renovada.
+        El archivo <code>.rbxl</code> contiene el juego completo.
+        Las carpetas complementarias (<code>assets/</code>, <code>music/</code>, <code>sfx/</code>)
+        almacenan archivos fuente para edición y referencia.
+      </p>
+    </section>
+
+    <section id="start" class="section">
+      <h2>🚀 Cómo editar</h2>
+      <ul>
+        <li>Descargá y abrí el archivo <code>.rbxl</code> en <a href="https://create.roblox.com/" target="_blank" style="color:var(--honey-dark);">Roblox Studio</a></li>
+        <li>Todo el lógica, assets y scripts están dentro del archivo principal</li>
+        <li>Hacé tus ediciones directamente en Studio — sin herramientas externas</li>
+      </ul>
+    </section>
+
+    <section id="structure" class="section">
+      <h2>📁 Estructura del Proyecto</h2>
+      <pre class="tree">BeeSwarmSimulatorRemake/
+├── BSSR.rbxl              # Archivo principal del juego
+├── assets/                # Assets fuente
+│   ├── BeesFace/          # Iconos de abejas por rareza
+│   ├── BeesEmotes/        # Iconos de emotes
+│   ├── Eggs/              # Iconos de huevos
+│   ├── Icons/             # Iconos de items y UI
+│   └── Buttons/           # Iconos de botones de menú
+├── music/                 # Archivos de música
+├── sfx/                   # Efectos de sonido
+└── README-assets/         # Imágenes del README</pre>
+    </section>
+
+    <section id="music-link" class="section" style="text-align:center;">
+      <h2>🎵 Música del Juego</h2>
+      <p style="margin-bottom:1rem;">Escuchá todas las pistas de música del juego, organizadas por área.</p>
+      <a href="music/" style="
+        display: inline-block;
+        background: var(--honey);
+        color: var(--brown);
+        padding: 0.8rem 2rem;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-decoration: none;
+        border: 2px solid var(--honey-dark);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        transition: all 0.2s;
+      " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.2)'"
+         onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.15)'">
+        🎶 Ir al Reproductor de Música
+      </a>
+    </section>
+
+    <section id="disclaimer" class="section disclaimer">
+      <h2>⚠️ Aviso</h2>
+      <p>
+        <strong>NO ESTÁ AFILIADO, COLABORANDO O ASOCIADO CON ONETT O BSS DE NINGUNA MANERA.</strong><br>
+        Este es un proyecto fan hecho con fines educativos y recreativos.
+      </p>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="links">
+      <a href="https://discord.gg/TTAkDRZqv8" target="_blank">Discord</a>
+      <a href="https://youtube.com/@IamDanteDev" target="_blank">YouTube — IamDanteDev</a>
+      <a href="https://youtube.com/@danteelgamerYT" target="_blank">YouTube — danteelgamerYT</a>
+    </div>
+  </footer>
+
+  <script>
+    (function() {
+      const container = document.getElementById('beeContainer');
+      const beeNormal = 'HTML-assets/DemoBee.webp';
+      const beeGifted = 'HTML-assets/DemoBeeGifted.webp';
+      const configs = [
+        { top: '10%', dur: 12, delay: 0 },
+        { top: '25%', dur: 15, delay: 3 },
+        { top: '50%', dur: 10, delay: 7 },
+        { top: '70%', dur: 18, delay: 2 },
+        { top: '15%', dur: 14, delay: 5 }
+      ];
+      configs.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'bee';
+        div.style.top = c.top;
+        div.style.left = '-5%';
+        div.style.animationDuration = c.dur + 's';
+        div.style.animationDelay = c.delay + 's';
+        const img = document.createElement('img');
+        img.src = Math.random() < 0.3 ? beeGifted : beeNormal;
+        img.alt = 'Bee';
+        div.appendChild(img);
+        container.appendChild(div);
+      });
+    })();
+  </script>
+
+</body>
+</html>

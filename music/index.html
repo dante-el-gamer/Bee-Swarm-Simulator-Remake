@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Música — Bee Swarm Simulator Remake</title>
+  <link rel="icon" type="image/png" href="../HTML-assets/Icon.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --honey: #f5a623;
+      --honey-dark: #d4891a;
+      --hive-yellow: #fdd835;
+      --brown: #5d4037;
+      --brown-light: #8d6e63;
+      --card-bg: rgba(255, 255, 245, 0.94);
+      --active: #fff9c4;
+      --text: #3e2723;
+      --grass: #4caf50;
+      --grass-dark: #388e3c;
+      --sky-top: #1a237e;
+      --sky-mid: #283593;
+      --sky-bottom: #3949ab;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Fredoka', sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 30%, var(--sky-bottom) 60%, var(--grass) 80%, var(--grass-dark) 100%);
+      min-height: 100vh;
+    }
+
+    /* --- Top bar --- */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar a {
+      text-decoration: none;
+      color: var(--hive-yellow);
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+    .topbar a:hover { color: #fff; }
+    .topbar h1 {
+      color: #fff;
+      font-size: 1.3rem;
+      flex: 1;
+      text-shadow: 1px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* --- Now Playing bar --- */
+    .now-playing {
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(12px);
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: sticky;
+      top: 53px;
+      z-index: 99;
+      border-bottom: 2px solid var(--honey);
+      flex-wrap: wrap;
+    }
+    .now-playing .np-label {
+      color: var(--honey);
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+    .now-playing .np-title {
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      flex: 1;
+      min-width: 120px;
+    }
+    .now-playing audio {
+      flex: 2;
+      min-width: 200px;
+      height: 36px;
+      border-radius: 8px;
+      outline: none;
+    }
+    .now-playing audio::-webkit-media-controls-panel {
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* --- Grid layout --- */
+    .grid {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1rem 4rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.2rem;
+    }
+
+    /* --- Area card --- */
+    .area-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 2px solid var(--hive-yellow);
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .area-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+    .area-header {
+      background: linear-gradient(135deg, var(--honey) 0%, var(--hive-yellow) 100%);
+      padding: 0.8rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .area-header .area-icon {
+      font-size: 1.5rem;
+    }
+    .area-header h2 {
+      font-size: 1.1rem;
+      color: var(--brown);
+      flex: 1;
+    }
+    .area-header .track-count {
+      background: var(--brown);
+      color: var(--hive-yellow);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+    }
+    .track-list {
+      list-style: none;
+      padding: 0.4rem 0;
+    }
+    .track-list li {
+      padding: 0.6rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .track-list li:last-child { border-bottom: none; }
+    .track-list li:hover { background: #fff8e1; }
+    .track-list li.playing {
+      background: var(--active);
+      font-weight: 600;
+    }
+    .track-list li .play-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--honey);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .track-list li:hover .play-icon {
+      background: var(--honey-dark);
+    }
+    .track-list li .track-name {
+      flex: 1;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+    .track-list li .track-tag {
+      font-size: 0.7rem;
+      background: #e0e0e0;
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      color: #616161;
+      font-weight: 600;
+    }
+
+    /* --- Footer --- */
+    .footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #fff;
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+      font-size: 0.85rem;
+      position: relative;
+      z-index: 1;
+    }
+    .footer a {
+      color: var(--hive-yellow);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: 1fr; }
+      .now-playing { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <a href="../">← Volver</a>
+    <h1>🎵 Música del Juego</h1>
+  </div>
+
+  <!-- Now Playing -->
+  <div class="now-playing">
+    <span class="np-label">♪ Now Playing</span>
+    <span class="np-title" id="npTitle">Elegí una pista para empezar</span>
+    <audio id="player" controls></audio>
+  </div>
+
+  <!-- Track grid -->
+  <div class="grid" id="grid"></div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>Bee Swarm Simulator Remake — Fan Project</p>
+    <p style="margin-top:0.3rem;">
+      <a href="../">Inicio</a> · <a href="https://discord.gg/TTAkDRZqv8" target="_blank">Discord</a>
+    </p>
+  </div>
+
+  <script>
+    const areas = [
+      {
+        name: "Cassette",
+        icon: "📼",
+        tracks: [
+          { file: "Cassette/Cassette__day.mp3", name: "Cassette — Día", tag: "day", cover: "DayVer.png" },
+          { file: "Cassette/Cassette__night.mp3", name: "Cassette — Noche", tag: "night", cover: "NightVer.png" },
+          { file: "Cassette/Cassette__shop.mp3", name: "Cassette — Tienda", tag: "shop", cover: "ShopVer.png" }
+        ]
+      },
+      {
+        name: "Clover Clash",
+        icon: "🍀",
+        tracks: [
+          { file: "CloverClash/Center.mp3", name: "Clover Clash — Centro", tag: "center", cover: "NormalVer.png" },
+          { file: "CloverClash/Left.mp3", name: "Clover Clash — Izquierda", tag: "left", cover: "NormalVer.png" },
+          { file: "CloverClash/Right.mp3", name: "Clover Clash — Derecha", tag: "right", cover: "NormalVer.png" }
+        ]
+      },
+      {
+        name: "Cozy Hive",
+        icon: "🏠",
+        tracks: [
+          { file: "Cozy Hive/CozyHive__OG.mp3", name: "Cozy Hive — Original", tag: "og", cover: "NormalOgVer.png" },
+          { file: "Cozy Hive/CozyHive__Day.mp3", name: "Cozy Hive — Día", tag: "day", cover: "DayVer.png" },
+          { file: "Cozy Hive/CozyHive__Night.mp3", name: "Cozy Hive — Noche", tag: "night", cover: "NightVer.png" }
+        ]
+      },
+      {
+        name: "Eclipse",
+        icon: "🌑",
+        tracks: [
+          { file: "Eclipse/Eclipse__OG.mp3", name: "Eclipse — Original", tag: "og", cover: "NormalOgVer.png" },
+          { file: "Eclipse/Eclipse__Day.mp3", name: "Eclipse — Día", tag: "day", cover: "DayVer.png" },
+          { file: "Eclipse/Eclipse__Night.mp3", name: "Eclipse — Noche", tag: "night", cover: "NightVer.png" }
+        ]
+      },
+      {
+        name: "Game Over",
+        icon: "💀",
+        tracks: [
+          { file: "Game Over/GameOver__Day.mp3", name: "Game Over — Día", tag: "day", cover: "DayVer.png" },
+          { file: "Game Over/GameOver__Night.mp3", name: "Game Over — Noche", tag: "night", cover: "NightVer.png" },
+          { file: "Game Over/GameOver__Bee.mp3", name: "Game Over — PVP", tag: "pvp", cover: "PvpBeeVer.png" }
+        ]
+      },
+      {
+        name: "Honey Gold",
+        icon: "🍯",
+        tracks: [
+          { file: "Honey Gold/HoneyGold__.mp3", name: "Honey Gold — Original", tag: "og", cover: "NormalOgVer.png" },
+          { file: "Honey Gold/HoneyGold__1.mp3", name: "Honey Gold — Versión 1", tag: "v1", cover: "NormalVer.png" },
+          { file: "Honey Gold/HoneyGold__2.mp3", name: "Honey Gold — Versión 2", tag: "v2", cover: "NormalVer.png" }
+        ]
+      },
+      {
+        name: "ME",
+        icon: "🌺",
+        tracks: [
+          { file: "ME/ME__OG.mp3", name: "ME — Original", tag: "og", cover: "NormalOgVer.png" },
+          { file: "ME/ME__Desert.mp3", name: "ME — Desierto", tag: "desert", cover: "DesertVer.png" },
+          { file: "ME/ME__Water.mp3", name: "ME — Agua", tag: "water", cover: "WaterVer.png" }
+        ]
+      },
+      {
+        name: "Off-Limits",
+        icon: "🚫",
+        tracks: [
+          { file: "Off-Limits/OffLimits__Day.mp3", name: "Off-Limits — Día", tag: "day", cover: "DayVer.png" },
+          { file: "Off-Limits/OffLimits__Night.mp3", name: "Off-Limits — Noche", tag: "night", cover: "NightVer.png" },
+          { file: "Off-Limits/OffLimits__Shop.mp3", name: "Off-Limits — Tienda", tag: "shop", cover: "ShopVer.png" }
+        ]
+      },
+      {
+        name: "Pollen",
+        icon: "🌸",
+        tracks: [
+          { file: "Pollen/Pollen__Day.mp3", name: "Pollen — Día", tag: "day", cover: "FlowerVer.png" },
+          { file: "Pollen/Pollen__Night.mp3", name: "Pollen — Noche", tag: "night", cover: "FlowerVer.png" }
+        ]
+      },
+      {
+        name: "PvP Zone",
+        icon: "⚔️",
+        tracks: [
+          { file: "Pvp Zone/PVP__Day.mp3", name: "PvP — Día", tag: "day", cover: "PvpDayVer.png" },
+          { file: "Pvp Zone/PVP__Night.mp3", name: "PvP — Noche", tag: "night", cover: "PvpNightVer.png" }
+        ]
+      },
+      {
+        name: "Secret Swarm",
+        icon: "🤫",
+        tracks: [
+          { file: "Secret Swarm/SecretSwarm__Day.mp3", name: "Secret Swarm — Día", tag: "day", cover: "DayVer.png" },
+          { file: "Secret Swarm/SecretSwarm__Night.mp3", name: "Secret Swarm — Noche", tag: "night", cover: "NightVer.png" },
+          { file: "Secret Swarm/SecretSwarm__shop.mp3", name: "Secret Swarm — Tienda", tag: "shop", cover: "ShopVer.png" }
+        ]
+      },
+      {
+        name: "Lost Fields (Spider)",
+        icon: "🕷️",
+        tracks: [
+          { file: "Spider/LostFields__OG.mp3", name: "Lost Fields — Original", tag: "og", cover: "NormalOgVer.png" },
+          { file: "Spider/LostFields__Day.mp3", name: "Lost Fields — Día", tag: "day", cover: "DayVer.png" },
+          { file: "Spider/LostFields__Night.mp3", name: "Lost Fields — Noche", tag: "night", cover: "NightVer.png" }
+        ]
+      },
+      {
+        name: "HoneyMan",
+        icon: "🐝",
+        tracks: [
+          { file: "HoneyMan/HoneyMan__Day.mp3", name: "HoneyMan — Día", tag: "day", cover: "HoneyVer.png" },
+          { file: "HoneyMan/HoneyMan__Night.mp3", name: "HoneyMan — Noche", tag: "night", cover: "HoneyVer.png" },
+          { file: "HoneyMan/HoneyMan__Shop.mp3", name: "HoneyMan — Tienda", tag: "shop", cover: "HoneyVer.png" }
+        ]
+      },
+      {
+        name: "Escape",
+        icon: "🏃",
+        tracks: [
+          { file: "Escape/Escape__OG.mp3", name: "Escape — Original", tag: "og", cover: "NormalOgVer.png" },
+          { file: "Escape/Escape__Day.mp3", name: "Escape — Día", tag: "day", cover: "EscapeDayVer.png" },
+          { file: "Escape/Escape__Night.mp3", name: "Escape — Noche", tag: "night", cover: "EscapeNightVer.png" }
+        ]
+      }
+    ];
+
+    const player = document.getElementById('player');
+    const npTitle = document.getElementById('npTitle');
+    const grid = document.getElementById('grid');
+    let currentLi = null;
+
+    areas.forEach(area => {
+      const card = document.createElement('div');
+      card.className = 'area-card';
+      card.innerHTML = `
+        <div class="area-header">
+          <span class="area-icon">${area.icon}</span>
+          <h2>${area.name}</h2>
+          <span class="track-count">${area.tracks.length}</span>
+        </div>
+        <ul class="track-list">
+          ${area.tracks.map((t, i) => `
+            <li data-file="${t.file}" data-name="${t.name}" data-cover="${t.cover}">
+              <span class="play-icon">▶</span>
+              <span class="track-name">${t.name}</span>
+              <span class="track-tag">${t.tag}</span>
+            </li>
+          `).join('')}
+        </ul>
+      `;
+      grid.appendChild(card);
+    });
+
+    grid.addEventListener('click', e => {
+      const li = e.target.closest('li[data-file]');
+      if (!li) return;
+
+      if (currentLi) currentLi.classList.remove('playing');
+      li.classList.add('playing');
+      currentLi = li;
+
+      const file = li.dataset.file;
+      const name = li.dataset.name;
+      const cover = '../HTML-assets/Music/' + li.dataset.cover;
+      npTitle.textContent = name;
+      player.src = file;
+      player.play();
+
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: name,
+          artist: 'Bee Swarm Simulator Remake',
+          album: 'BSS Remake — Música',
+          artwork: [
+            { src: cover, sizes: '512x512', type: 'image/png' }
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>
