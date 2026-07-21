@@ -1,0 +1,10 @@
+*.rbxl linguist-detectable=true
+*.rbxl linguist-language=Lua
+*.rbxl binary
+*.rbxm linguist-detectable=true
+*.rbxm linguist-language=Lua
+*.rbxm binary
+*.luau linguist-detectable=true
+*.luau linguist-language=Lua
+*.lua linguist-detectable=true
+*.lua linguist-language=Lua
