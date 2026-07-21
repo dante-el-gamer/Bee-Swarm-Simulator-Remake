@@ -8,3 +8,7 @@
 *.luau linguist-language=Lua
 *.lua linguist-detectable=true
 *.lua linguist-language=Lua
+*.md linguist-detectable=true
+*.md linguist-language=Markdown
+*.txt linguist-detectable=true
+*.txt linguist-language=Text
